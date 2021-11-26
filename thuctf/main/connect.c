@@ -113,8 +113,8 @@ void wifi_init_sta(char * ssid,char * pass)
         ESP_LOGI("wifi connect", "connected to ap SSID:%s",
                  ssid);
     } else if (bits & WIFI_FAIL_BIT) {
-        ESP_LOGI("wifi connect", "Failed to connect to SSID:%s,",
-                 ssid,);
+        ESP_LOGI("wifi connect", "Failed to connect to SSID:%s",
+                 ssid);
     } else {
         ESP_LOGE("wifi connect", "UNEXPECTED EVENT");
     }
