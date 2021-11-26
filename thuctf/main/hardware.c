@@ -19,7 +19,7 @@ int trigger = 0;
 // char hardware_flag_2[] = "flag{this_is_hardware_flag2}"; // THUCTF{AuT0++_is_th3_r1ght_w4y_hhhhhh}
 // char hardware_flag_3[] = "flag{this_is_hardware_flag3}"; // THUCTF{UART_15_v3ry_imp0r7ant_1n_i0T}
 
-char hardware_flag_1[39] = {0}; // 
+char hardware_flag_1[39] = {0};
 char hardware_flag_2[39] = {0};
 char hardware_flag_3[38] = {0};
 
@@ -79,7 +79,7 @@ void hardware_task2(){
     trigger = 0;
     while(1){
         printf("[+] hardware task II : trigger %d\n",trigger);
-        if(trigger > 1000){
+        if(trigger > 10000){
             printf("[+] hardware task II : %s\n",hardware_flag_2);
             break;
         }
