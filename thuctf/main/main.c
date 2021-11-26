@@ -41,7 +41,7 @@ void app_main(void)
         printf("[+] now task : MQTT\n");
 
         // MQTT
-        connect_wifi("Huawei@123","dcba1347");
+        connect_wifi("THUCTFIOT","mqttwifi@123");
         mqtt_app_start("mqtt://mqtt.esp32ctf.xyz");
     }
 }
