@@ -64,7 +64,7 @@ THUCTF{UART_15_v3ry_imp0r7ant_1n_i0T}
 ### task1
 
 - 题目：连接板子目标端口，尝试获得flag
-- 解法：
+- 解法：首先要按照板子要求构造出wifi热点，然后连接板子的3333端口并发送getflag即可
 
 ```
 [+] network task I: I will connect a wifi -> ssid: fmnlso , password glttosvt 
@@ -85,22 +85,32 @@ THUCTF{M4k3_A_w1rele55_h0t5p0ts}
 ### task2
 
 - 题目：你知道他发给百度的flag么
-- 解法：
-
+- 解法：如果用手机构造热点不方便抓包，故用win或者mac的网络共享开启热点，然后对共享网络的网卡抓包即可
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174710945.png?raw=true)
-
-
 
 ### task3
 
 - 题目：flag在空中
-- 解法：
+- 解法：使用kali以及外置网卡抓802.11裸包，即可看到有flag的报文
 
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174659640.png?raw=true)
 
+```
+➜  airmon-ng start wlan0 
+➜  airodump-ng wlan0mon
+```
+
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174624863.png?raw=true)
+
+
+如果是MAC可直接使用内置网卡抓包：
+
+```
+➜  sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -s
+➜  sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport en0 sniff 1 
+```
 
 ## 蓝牙题目
 
@@ -108,7 +118,7 @@ THUCTF{M4k3_A_w1rele55_h0t5p0ts}
 ### task1
 
 - 题目：修改蓝牙名称并设置可被发现即可获得flag
-- 解法：
+- 解法：如题
 
 ```
 [+] bluetooth task I : Please change your bluetooth device name to uunpyagw
@@ -122,15 +132,13 @@ bluetooth task I : THUCTF{b1u3t00th_n4me_a1s0_c4n_b3_An_aTT4ck_surfAce}
 ### task2
 
 - 题目：flag在空中
-- 解法：
-
+- 解法：通过第一关后，板子会由经典蓝牙切换到低功耗蓝牙，flag就在BLE的广播报文中，使用手机软件nRF connect即可获得：
 
 
 ```
 [+] bluetooth task II : BLE device name is jlprw
 [+] bluetooth task II : Please find the second flag in the ADV package from this BLE device jlprw
 ```
-
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174752464.png?raw=true)
 
@@ -149,9 +157,7 @@ THUCTF{AdVD47a}
 
 
 - 题目：分析GATT业务并获得flag
-- 解法：
-
-
+- 解法：连接此BLE，并对id为0xff的service写入task2的flag，再次读取即可获得flag
 
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174742131.png?raw=true)
@@ -167,24 +173,25 @@ I (389671) GATT: 54 48 55 43 54 46 7b 41 64 56 44 34 37 61 7d
 
 ## MQTT
 
-```
-mqtt_app_start("mqtt://mqtt.esp32ctf.xyz");
-```
-
-https://mqttfx.jensd.de/index.php/download
+拔掉跳冒以切换方向，可以看到日志：
 
 ```
 [+] now task : MQTT
 ```
 
+阅读源码可以看到MQTT连接了一个域名（花了一块钱买了一年）：
+
+```c
+mqtt_app_start("mqtt://mqtt.esp32ctf.xyz");
+```
+
+这个域名对应的服务器上启了一个为未授权未认证的MQTT broker，也就是本项目中的那个docker。对于MQTT的收发包，推荐工具：[MQTT.fx](https://mqttfx.jensd.de/index.php/download)
 
 
 ### task1 
 
 - 题目：分析GATT业务并获得flag
-- 解法：
-
-
+- 解法：可以直接连接broker，井号为通配符，直接订阅所有主题，即可获得flag
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175028179.png?raw=true)
 
@@ -194,20 +201,16 @@ https://mqttfx.jensd.de/index.php/download
 THUCTF{#_1s_God_in_MQTT}
 ```
 
-
-
-
 ### task2 
 
 - 题目：分析GATT业务并获得flag
-- 解法：
+- 解法：向flag2目标主题发送伪造IP即可
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175056665.png?raw=true)
 
 
 ```
 root@vultr:~# nc -vvv  -l -p 80
-nc: getnameinfo: Temporary failure in name resolution
 Connection received on 221.218.140.166 18214
 GET / HTTP/1.0
 User-Agent: esp-idf/1.0 esp32
@@ -217,8 +220,7 @@ flag: THUCTF{attAck_t0_th3_dev1ce_tcp_r3cV_ch4nnel}
 ### task3
 
 - 题目：分析GATT业务并获得flag
-- 解法：
-
+- 解法：判断长度时有符号，比较时相当于无符号，故长度为-1即可绕过大小限制，带出位于flag2后的flag3
 
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175117275.png?raw=true)
@@ -227,7 +229,6 @@ flag: THUCTF{attAck_t0_th3_dev1ce_tcp_r3cV_ch4nnel}
 
 ```
 root@vultr:~# nc -vvv  -l -p 80
-nc: getnameinfo: Temporary failure in name resolution
 Connection received on 221.218.140.166 18263
 GET / HTTP/1.0
 User-Agent: esp-idf/1.0 esp32
