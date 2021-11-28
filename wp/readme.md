@@ -1,10 +1,12 @@
 # ESP32 CTF 清华校赛版本
 
+解题的总体思路是通过对隐去flag的源码分析应该如何获取flag，另外在源码中为了清晰阅读，直接采用include c文件分离不同方向题目代码，省掉头文件。
+
 ## 硬件题目
 
 > main/hardware.c
 
-题目顺序开启
+题目开启顺序：
 
 ```
 task1 -> task2 -> task3
@@ -61,6 +63,17 @@ THUCTF{UART_15_v3ry_imp0r7ant_1n_i0T}
 
 ## 网络题目
 
+
+> main/network.c
+
+题目开启顺序：
+
+```
+        -> task2 
+task1 
+        -> task3
+```
+
 ### task1
 
 - 题目：连接板子目标端口，尝试获得flag
@@ -113,6 +126,14 @@ THUCTF{M4k3_A_w1rele55_h0t5p0ts}
 ```
 
 ## 蓝牙题目
+
+> main/bluetooth.c
+
+题目开启顺序：
+
+```
+task1 -> task2 -> task3
+```
 
 
 ### task1
@@ -172,6 +193,15 @@ I (389671) GATT: 54 48 55 43 54 46 7b 41 64 56 44 34 37 61 7d
 ```
 
 ## MQTT
+
+> main/mqtt.c
+
+题目开启顺序：
+
+```
+task1 
+task2 -> task3
+```
 
 拔掉跳冒以切换方向，可以看到日志：
 
