@@ -30,7 +30,7 @@ task1 -> task2 -> task3
 - 题面：在GPIO18处构造出1w个上升沿
 - 解法：用杜邦线将GPIO18与板子的TX相接，利用串口一直有数据输出，自动构造上升沿：
 
-![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174841886.png?raw=true)
+![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211126153122219.png?raw=true)
 
 ```python
 [+] hardware task II : trigger 9491
@@ -44,7 +44,7 @@ task1 -> task2 -> task3
 - 题目：在另一个串口寻找第三个flag
 - 解法：分析代码，第二个串口的TX、RX分别为4、5号引脚，接到串口转换器，然后用串口工具查看即可（发的串口转换器芯片为CH340，Linux、OSX免驱，WIN10需要手动装驱动）
 
-![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174858734.png?raw=true)
+![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211126153232818.png?raw=true)
 
 ```
 Xshell 7 (Build 0090)
