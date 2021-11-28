@@ -15,7 +15,6 @@ task1 -> task2 -> task3
 ### task1
 
 - 题目：将GPIO18抬高，持续3s即可获得flag
-- 源码：
 
 ```c
 void hardware_task1(){
