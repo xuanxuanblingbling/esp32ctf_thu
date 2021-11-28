@@ -196,7 +196,35 @@ b'\x06\tjlprw\x10\xfdTHUCTF{AdVD47a}
 ```
 
 ```
-THUCTF{AdVD47a}
+
+$ sudo blescan
+Scanning for devices...
+    Device (new): 94:3c:c6:cd:da:86 (public), -47 dBm 
+	Complete Local Name: 'jsstg'
+	0xfd: <5448554354467b416456443437617d>
+
+$ sudo bluescan -m le
+[WARNING] Before doing an active scan, make sure you spoof your BD_ADDR.
+[INFO] LE active scanning on hci0 with timeout 10 sec
+
+
+----------------LE Devices Scan Result----------------
+Addr:        94:3C:C6:CD:DA:86 (Espressif Inc.)
+Addr type:   public
+Connectable: True
+RSSI:        -45 dBm
+General Access Profile:
+    Complete Local Name: jsstg
+    0xFD (Unknown): 5448554354467b416456443437617d
+
+
+
+$ python3
+Python 3.9.5 (default, May 11 2021, 08:20:37) 
+[GCC 10.3.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> bytes.fromhex('5448554354467b416456443437617d')
+b'THUCTF{AdVD47a}'
 ```
 
 ### task3
@@ -205,11 +233,50 @@ THUCTF{AdVD47a}
 - 题目：分析GATT业务并获得flag
 - 解法：连接此BLE，并对id为0xff的service写入task2的flag，再次读取即可获得flag
 
-
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174742131.png?raw=true)
 
+
+```python
+import pygatt
+
+adapter = pygatt.GATTToolBackend()
+adapter.start()
+device = adapter.connect('94:3C:C6:CD:DA:86')
+print("success")
+for uuid in device.discover_characteristics().keys():
+    print("Read UUID %s" % (uuid))
 ```
-THUCTF{WrItE_4_gA7T}
+
+```python
+$ python3 exp.py 
+success
+Read UUID 00002a05-0000-1000-8000-00805f9b34fb
+Read UUID 00002a00-0000-1000-8000-00805f9b34fb
+Read UUID 00002a01-0000-1000-8000-00805f9b34fb
+Read UUID 00002aa6-0000-1000-8000-00805f9b34fb
+Read UUID 0000ff01-0000-1000-8000-00805f9b34fb
+```
+
+```python
+import pygatt
+
+adapter = pygatt.GATTToolBackend()
+adapter.start()
+device = adapter.connect('94:3C:C6:CD:DA:86')
+print("success")
+uuid = '0000ff01-0000-1000-8000-00805f9b34fb'
+
+print(device.char_read(uuid))
+
+device.char_write(uuid,b'THUCTF{AdVD47a}')
+print(device.char_read(uuid))
+```
+
+```python
+$ python3 exp.py 
+success
+bytearray(b'\xde\xed\xbe\xef')
+bytearray(b'THUCTF{WrItE_4_gA7T')
 ```
 
 ## MQTT
