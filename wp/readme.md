@@ -49,6 +49,21 @@ void hardware_task1(){
 ### task2
 
 - 题目：在GPIO18处构造出1w个上升沿
+
+```c
+void hardware_task2(){
+    trigger = 0;
+    while(1){
+        printf("[+] hardware task II : trigger %d\n",trigger);
+        if(trigger > 10000){
+            printf("[+] hardware task II : %s\n",hardware_flag_2);
+            break;
+        }
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }
+}
+```
+
 - 解法：用杜邦线将GPIO18与板子的TX相接，利用串口一直有数据输出，自动构造上升沿：
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211126153122219.png?raw=true)
@@ -63,6 +78,20 @@ void hardware_task1(){
 ### task3
 
 - 题目：在另一个串口寻找第三个flag
+
+```c
+#define ECHO_TEST_TXD  (GPIO_NUM_4)
+#define ECHO_TEST_RXD  (GPIO_NUM_5)
+
+void hardware_task3(){
+    printf("[+] hardware task III : find the third flag in another UART\n");
+    while (1) {
+        uart_write_bytes(UART_NUM_1, hardware_flag_3, strlen(hardware_flag_3));
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }
+}
+```
+
 - 解法：分析代码，第二个串口的TX、RX分别为4、5号引脚，接到串口转换器，然后用串口工具查看即可（发的串口转换器芯片为CH340，Linux、OSX免驱，WIN10需要手动装驱动）
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211126153232818.png?raw=true)
@@ -96,6 +125,20 @@ task1
 ### task1
 
 - 题目：连接板子目标端口，尝试获得flag
+
+```c
+char buffer[100];
+while(recv(sock,buffer,0x10,0)){
+    if(strstr(buffer,"getflag")){
+        send(sock, network_flag_1, strlen(network_flag_1), 0);
+        break;
+    }else{
+        send(sock, "error\n", strlen("error\n"), 0);
+    }
+    vTaskDelay(1000 / portTICK_RATE_MS);
+}
+```
+
 - 解法：首先要按照板子要求构造出wifi热点，然后连接板子的3333端口并发送getflag即可
 
 ```
@@ -117,6 +160,24 @@ THUCTF{M4k3_A_w1rele55_h0t5p0ts}
 ### task2
 
 - 题目：你知道他发给百度的flag么
+
+```c
+while(1) {
+    if(open_next_tasks){
+        printf("[+] network task II : send the second flag to baidu\n");
+        getaddrinfo("www.baidu.com", "80", &hints, &res);
+        addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
+        ESP_LOGI("network", "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
+        s = socket(res->ai_family, res->ai_socktype, 0);
+        connect(s, res->ai_addr, res->ai_addrlen);
+        freeaddrinfo(res);
+        write(s, request, strlen(request));
+        close(s);
+    }
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
+}
+```
+
 - 解法：如果用手机构造热点不方便抓包，故用win或者mac的网络共享开启热点，然后对共享网络的网卡抓包即可
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174710945.png?raw=true)
@@ -128,6 +189,32 @@ THUCTF{Sn1ffer_N3tw0rk_TrAffic_In_7h4_Main_r0aD}
 ### task3
 
 - 题目：flag在空中
+
+```c
+static void network_wifi()
+{
+    static const char ds2ds_pdu[] = {
+    0x48, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xE8, 0x65, 0xD4, 0xCB, 0x74, 0x19, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0x60, 0x94, 0xE8, 0x65, 0xD4, 0xCB, 0x74, 0x1C, 0x26, 0xB9,
+    0x0D, 0x02, 0x7D, 0x13, 0x00, 0x00, 0x01, 0xE8, 0x65, 0xD4, 0xCB, 0x74,
+    0x1C, 0x00, 0x00, 0x26, 0xB9, 0x00, 0x00, 0x00, 0x00,
+    };  
+
+    char pdu[200]={0};
+    memcpy(pdu,ds2ds_pdu,sizeof(ds2ds_pdu));
+    memcpy(pdu+sizeof(ds2ds_pdu),network_flag_3,sizeof(network_flag_3));
+
+    while(1) {
+        if(open_next_tasks){
+            printf("[+] network task III : send raw 802.11 package contains the third flag\n");
+            esp_wifi_80211_tx(ESP_IF_WIFI_STA, pdu, sizeof(ds2ds_pdu)+sizeof(network_flag_3), true);
+        }
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
+    }
+}
+```
+
 - 解法：使用kali以及外置网卡抓802.11裸包，即可看到有flag的报文
 
 
@@ -185,6 +272,18 @@ task1 -> task2 -> task3
 ### task1
 
 - 题目：修改蓝牙名称并设置可被发现即可获得flag
+
+```c
+void check_name(char * a,char * b){
+    if(!strcmp(a,b)){
+        printf("bluetooth task I : %s\n",bt_flag_1);
+        esp_bt_gap_cancel_discovery();
+        scan = 0;
+        next_task();
+    }
+}
+```
+
 - 解法：如题
 
 ```
@@ -199,6 +298,15 @@ bluetooth task I : THUCTF{b1u3t00th_n4me_a1s0_c4n_b3_An_aTT4ck_surfAce}
 ### task2
 
 - 题目：flag在空中
+
+```c
+unsigned char data[100];
+memcpy(data,fmt,sizeof(fmt));
+memcpy(data+2,client_name,5);
+memcpy(data+sizeof(fmt),bt_flag_2,sizeof(bt_flag_2));
+esp_ble_gap_config_adv_data_raw(data,sizeof(fmt)+sizeof(bt_flag_2));
+```
+
 - 解法：通过第一关后，板子会由经典蓝牙切换到低功耗蓝牙，flag就在BLE的广播报文中，使用手机软件[nRF connect](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp&hl=en&gl=US)即可获得：
 
 
@@ -247,8 +355,19 @@ b'THUCTF{AdVD47a}'
 
 ### task3
 
-
 - 题目：分析GATT业务并获得flag
+
+```c
+if(!strncmp(bt_flag_2,(char *)param->write.value,param->write.len)){
+    printf("[+] bluetooth task III : you can read the third flag this time\n");
+    open_task3 = 1;
+}
+...
+if(open_task3){
+    rsp.attr_value.len = sizeof(bt_flag_3);
+    memcpy(rsp.attr_value.value,bt_flag_3,sizeof(bt_flag_3));
+```
+
 - 解法：连接此BLE，并对id为0xff01的characteristics写入task2的flag，再次读取即可获得flag
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174742131.png?raw=true)
@@ -329,7 +448,16 @@ mqtt_app_start("mqtt://mqtt.esp32ctf.xyz");
 
 ### task1 
 
-- 题目：分析GATT业务并获得flag
+- 题目：你知道MQTT的上帝是谁么
+
+```c
+switch (event->event_id) {
+    case MQTT_EVENT_CONNECTED:
+        ESP_LOGI("mqtt", "MQTT_EVENT_CONNECTED");
+        msg_id = esp_mqtt_client_publish(client, "/topic/flag1", mqtt_flag_1, 0, 1, 0);
+        printf("[+] MQTT task I: publish successful, msg_id=%d\n", msg_id);
+```
+
 - 解法：可以直接连接broker，井号为通配符，直接订阅所有主题，即可获得flag
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175028179.png?raw=true)
@@ -365,7 +493,34 @@ client.loop_forever()
 
 ### task2 
 
-- 题目：分析GATT业务并获得flag
+- 题目：你能欺骗订阅者么
+
+```c
+...
+while(1){
+        printf("[+] MQTT task II: I send second flag to baidu\n");
+        esp_mqtt_client_publish(client, topic_2, "www.baidu.com?46", 0, 1, 0);
+        vTaskDelay(10000 / portTICK_RATE_MS);
+}
+...
+void mqtt_data_hander(int length,char * data){
+    ...
+    char tag3[] = " [+] MQTT task III: ";
+    sprintf(flagdata,"%s%s%s",mqtt_flag_2,tag3,mqtt_flag_3);
+
+    int a = 46;
+
+    char * p = strnstr(data,"?",length);
+    if(p){
+        int data_length = p - data;
+        snprintf(l,length - data_length,"%s",p+1);
+        a = atoi(l);
+        length = data_length;
+    }
+
+    sprintf(url,"%.*s",length, data);
+```
+
 - 解法：向flag2目标主题发送自己VPS的IP即可
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175056665.png?raw=true)
@@ -391,8 +546,24 @@ flag: THUCTF{attAck_t0_th3_dev1ce_tcp_r3cV_ch4nnel}
 
 ### task3
 
-- 题目：分析GATT业务并获得flag
-- 解法：判断长度时有符号，比较时相当于无符号，故长度为-1即可绕过大小限制，带出位于flag2后的flag3
+- 题目：这是个内存破坏的前戏
+
+```c
+sprintf(url,"%.*s",length, data);
+
+char fmt[] = "GET / HTTP/1.0\r\n"
+                "User-Agent: esp-idf/1.0 esp32\r\n"
+                "flag: %s\r\n"
+                "\r\n";
+
+if( a < (int)(sizeof(mqtt_flag_2) + sizeof(tag3) - 1 ) ){
+    memcpy(out,flagdata,a & 0xff);
+    sprintf(httpdata,fmt,out);
+    http_get_task(url,httpdata);
+}          
+```
+
+- 解法：判断长度时有符号，使用时与上0xff，相当于无符号，故长度为-1即可绕过大小限制，带出位于flag2后的flag3
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175117275.png?raw=true)
 
@@ -425,7 +596,13 @@ b'GET / HTTP/1.0\r\nUser-Agent: esp-idf/1.0 esp32\r\nflag: THUCTF{attAck_t0_th3_
 
 ## 固件彩蛋
 
-使用esptools.py dump固件：
+flag为main.c中的xTaskCreate创建任务的名字：
+
+```c
+xTaskCreate(hardware, "THUCTF{DuMp_the_b1n_by_espt00l.py_Ju5t_1n_0ne_Lin3}", 2048, NULL, 10, NULL);
+```
+
+显然此任务名没有与任何题目接口有交互，所以只能采用固件读取的方式获得此flag。使用esptools.py dump固件：
 
 ```python
 ➜   python ~/Desktop/esp/esp-idf2/components/esptool_py/esptool/esptool.py \
