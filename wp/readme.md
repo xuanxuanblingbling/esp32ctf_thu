@@ -15,8 +15,28 @@ task1 -> task2 -> task3
 ### task1
 
 - 题目：将GPIO18抬高，持续3s即可获得flag
-- 解法：用杜邦线将GPIO18与3.3v或5v相接
+- 源码：
 
+```c
+void hardware_task1(){
+    int hit = 0;
+    while(1) {
+        printf("[+] hardware task I : hit %d\n",hit);
+        if(gpio_get_level(GPIO_INPUT_IO_0)){
+            hit ++ ;
+        }else{
+            hit = 0;
+        }
+        if(hit>3){
+            printf("[+] hardware task I : %s\n",hardware_flag_1);
+            break;
+        }
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }
+}
+```
+
+- 解法：用杜邦线将GPIO18与3.3v或5v相接
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174914261.png?raw=true)
 
