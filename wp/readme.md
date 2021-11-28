@@ -178,7 +178,7 @@ while(1) {
 }
 ```
 
-- 解法：如果用手机构造热点不方便抓包，故用win或者mac的网络共享开启热点，然后对共享网络的网卡抓包即可
+- 解法：通信干路抓包，如果用手机构造热点不方便抓包，故用win或者mac的网络共享开启热点，然后对共享网络的网卡抓包即可
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174710945.png?raw=true)
 
@@ -431,7 +431,7 @@ task1
 task2 -> task3
 ```
 
-拔掉跳冒以切换方向，可以看到日志：
+拔掉跳冒以切换题目方向，可以看到日志：
 
 ```
 [+] now task : MQTT
