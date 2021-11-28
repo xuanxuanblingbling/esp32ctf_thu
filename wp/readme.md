@@ -161,6 +161,8 @@ THUCTF{M4k3_A_w1rele55_h0t5p0ts}
 
 - 题目：你知道他发给百度的flag么
 
+> 此部分代码不完善，可能会因死循环爆栈导致重启，请见谅...
+
 ```c
 while(1) {
     if(open_next_tasks){
@@ -181,6 +183,7 @@ while(1) {
 - 解法：通信干路抓包，如果用手机构造热点不方便抓包，故用win或者mac的网络共享开启热点，然后对共享网络的网卡抓包即可
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174710945.png?raw=true)
+
 
 ```
 THUCTF{Sn1ffer_N3tw0rk_TrAffic_In_7h4_Main_r0aD}
