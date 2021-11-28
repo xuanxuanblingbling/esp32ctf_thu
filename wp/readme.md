@@ -1,6 +1,6 @@
-# ESP32 CTF 清华校赛版本
+# ESP32 CTF 清华校赛版 Write Up
 
-解题的总体思路是通过对隐去flag的源码分析应该如何获取flag。并且在真实板子上的代码中，采用了动态aes解密真flag的方式，防止选手通过读取固件直接获得所有明文flag。另外在源码中为了清晰阅读，直接采用include c文件分离不同方向题目代码，省掉了头文件。
+通过USB线连接ESP32开发板，通过串口工具即可看到题目信息的相关输出。解题的总体思路是通过对隐去flag的源码分析应该如何获取flag。并且在真实板子上的代码中，采用了动态aes解密真flag的方式，防止选手通过读取固件直接获得所有明文flag。另外在源码中为了清晰阅读，直接采用include c文件分离不同方向题目代码，省掉了头文件。
 
 ## 硬件题目
 
@@ -602,7 +602,7 @@ flag为main.c中的xTaskCreate创建任务的名字：
 xTaskCreate(hardware, "THUCTF{DuMp_the_b1n_by_espt00l.py_Ju5t_1n_0ne_Lin3}", 2048, NULL, 10, NULL);
 ```
 
-显然此任务名没有与任何题目接口有交互，所以只能采用固件读取的方式获得此flag。使用esptools.py dump固件：
+显然此任务名没有与任何题目接口有交互，所以只能采用固件读取的方式获得此flag，故使用esptools.py dump固件：
 
 ```python
 ➜   python ~/Desktop/esp/esp-idf2/components/esptool_py/esptool/esptool.py \
