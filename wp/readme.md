@@ -161,6 +161,8 @@ THUCTF{Y0u_cAn_s3nd_4nd_sNiff3r_802.11_r4w_pAckag3}
 task1 -> task2 -> task3
 ```
 
+相关工具使用方法参考：[用 西湖论剑IoT闯关赛 蓝牙赛题 理解 蓝牙协议](https://xuanxuanblingbling.github.io/wireless/ble/2021/06/26/ble/)
+
 ### task1
 
 - 题目：修改蓝牙名称并设置可被发现即可获得flag
@@ -188,15 +190,10 @@ bluetooth task I : THUCTF{b1u3t00th_n4me_a1s0_c4n_b3_An_aTT4ck_surfAce}
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174752464.png?raw=true)
 
-```
-Python 3.8.7 (tags/v3.8.7:6503f05, Dec 21 2020, 17:59:51) [MSC v.1928 64 bit (AMD64)] on win32
-Type "help", "copyright", "credits" or "license" for more information.
->>> bytes.fromhex('06096A6C70727710FD5448554354467B416456443437617D') 
-b'\x06\tjlprw\x10\xfdTHUCTF{AdVD47a}
-```
 
-```
+当然也可以在有蓝牙适配器的主机上使用blescan、bluescan等扫描到目标广播报文：
 
+```python
 $ sudo blescan
 Scanning for devices...
     Device (new): 94:3c:c6:cd:da:86 (public), -47 dBm 
@@ -216,9 +213,11 @@ RSSI:        -45 dBm
 General Access Profile:
     Complete Local Name: jsstg
     0xFD (Unknown): 5448554354467b416456443437617d
+```
 
+然后hex解码：
 
-
+```python
 $ python3
 Python 3.9.5 (default, May 11 2021, 08:20:37) 
 [GCC 10.3.0] on linux
@@ -231,10 +230,11 @@ b'THUCTF{AdVD47a}'
 
 
 - 题目：分析GATT业务并获得flag
-- 解法：连接此BLE，并对id为0xff的service写入task2的flag，再次读取即可获得flag
+- 解法：连接此BLE，并对id为0xff01的characteristics写入task2的flag，再次读取即可获得flag
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174742131.png?raw=true)
 
+也可在主机上用pygatt解题，首先获得目标设备characteristics的uuid：
 
 ```python
 import pygatt
@@ -255,6 +255,8 @@ Read UUID 00002a01-0000-1000-8000-00805f9b34fb
 Read UUID 00002aa6-0000-1000-8000-00805f9b34fb
 Read UUID 0000ff01-0000-1000-8000-00805f9b34fb
 ```
+
+然后直接读取会读到deadbeef，写入上一关flag后重新读取即可获得本关flag：
 
 ```python
 import pygatt
