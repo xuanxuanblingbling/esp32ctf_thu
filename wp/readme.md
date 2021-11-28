@@ -242,14 +242,13 @@ import pygatt
 adapter = pygatt.GATTToolBackend()
 adapter.start()
 device = adapter.connect('94:3C:C6:CD:DA:86')
-print("success")
+
 for uuid in device.discover_characteristics().keys():
     print("Read UUID %s" % (uuid))
 ```
 
 ```python
 $ python3 exp.py 
-success
 Read UUID 00002a05-0000-1000-8000-00805f9b34fb
 Read UUID 00002a00-0000-1000-8000-00805f9b34fb
 Read UUID 00002a01-0000-1000-8000-00805f9b34fb
@@ -263,18 +262,16 @@ import pygatt
 adapter = pygatt.GATTToolBackend()
 adapter.start()
 device = adapter.connect('94:3C:C6:CD:DA:86')
-print("success")
+
 uuid = '0000ff01-0000-1000-8000-00805f9b34fb'
 
 print(device.char_read(uuid))
-
 device.char_write(uuid,b'THUCTF{AdVD47a}')
 print(device.char_read(uuid))
 ```
 
 ```python
 $ python3 exp.py 
-success
 bytearray(b'\xde\xed\xbe\xef')
 bytearray(b'THUCTF{WrItE_4_gA7T')
 ```
