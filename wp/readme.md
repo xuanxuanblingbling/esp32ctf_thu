@@ -122,7 +122,7 @@ THUCTF{Sn1ffer_N3tw0rk_TrAffic_In_7h4_Main_r0aD}
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174624863.png?raw=true)
 
 
-如果是MAC电脑，则不需要外置网卡，可直接使用自带网卡抓包，首先确定目标wifi的信道：
+如果是Mac电脑，则不需要外置网卡，可直接使用自带网卡抓包，首先确定目标wifi的信道：
 
 ```
 ➜  sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -s
