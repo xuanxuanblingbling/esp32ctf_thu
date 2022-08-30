@@ -11,7 +11,7 @@
 | docker     | 未授权未认证的MQTT broker镜像 |
 | attachment | 给选手的说明                  |
 | test       | 测试脚本                      |
-| wp         | 题目解析                      |
+| wp         | 题目解析                       |
 
 ## 编译方法
 
